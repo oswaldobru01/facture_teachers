@@ -1,5 +1,6 @@
 ﻿using facture_teachers.Helpers.Interfaces;
 using facture_teachers.Models.DB;
+using facture_teachers.Models.Views.Nomina;
 using Microsoft.EntityFrameworkCore;
 
 namespace facture_teachers.Helpers.Repositories
@@ -80,5 +81,31 @@ namespace facture_teachers.Helpers.Repositories
 
             return result.Sum(l => l.hour);
         }
+
+        public List<GetTeacher4Nomina> GetNominaInPeriod(int _year, int _month) 
+        {
+            DateTime dt = DateTime.Now;
+            var lesson = from Datagroup in (from lessons in Context.Lessons
+                                            where lessons.Date.Month == _month && lessons.Date.Year == _year
+                                            group lessons by lessons.IdTeacher into lessonsGroup
+                                            select new { idTeacher = lessonsGroup.Key, Total = lessonsGroup.ToList().Sum(l => l.Value) })
+                         join teacher in Context.Teachers on Datagroup.idTeacher equals teacher.Id
+                         select new { 
+                             Id = teacher.Id, 
+                             Name = teacher.Name, 
+                             Identification = teacher.Identification, 
+                             Type = teacher.Type, 
+                             PaymentCurrent = teacher.PaymentCurrent, 
+                             HourlyRate = teacher.HourlyRate,
+                             Value = Datagroup.Total
+                         };
+
+            List<GetTeacher4Nomina> lista = lesson.Select(l => new GetTeacher4Nomina(l.Name, l.Identification, l.Type, l.PaymentCurrent, l.HourlyRate,l.Value)).ToList();
+
+            
+            return lista;
+            
+        }
+
     }
 }

@@ -15,6 +15,7 @@ namespace facture_teachers.Models.DB
         public string Type { get; set; } = null!;
         public string PaymentCurrent { get; set; } = null!;
         public decimal HourlyRate { get; set; }
+        public decimal Equivalence { get; set; }
         public int Id { get; set; }
 
         public virtual ICollection<Lesson> Lessons { get; set; }

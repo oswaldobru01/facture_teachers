@@ -22,5 +22,6 @@ namespace facture_teachers.Models.Views.Teachers
 
         [DataMember(Name = "Id")]
         public int Id { get; set; }
+
     }
 }

@@ -12,6 +12,7 @@ namespace facture_teachers.Helpers.Services
         private TeachersValidator _teachersValidator;
         private TeachersRepository _teacherRepository;
         private ExchangeRateService _exchangeRateService;
+
         private string PLANT_CODE = "PLANTA";
         private string COLOMBIAN_PAYMENT = "COP";
         private string ERROR_CODE_API_EXCHANGE = "error";
@@ -33,6 +34,7 @@ namespace facture_teachers.Helpers.Services
                 Type = _addTeacher.Type.ToUpper(),
                 PaymentCurrent = _addTeacher.PaymentCurrent.ToUpper(),
                 HourlyRate = _addTeacher.HourlyRate
+
             };
 
             /*Validate model*/
@@ -56,15 +58,19 @@ namespace facture_teachers.Helpers.Services
             if (paymentCUrrencyValid.Result.result == ERROR_CODE_API_EXCHANGE)
                 return new ResponseServices<int>(System.Net.HttpStatusCode.BadRequest, $"El código de moneda no existe.");
 
-            if (addTeachersEntity.PaymentCurrent != COLOMBIAN_PAYMENT)
-                addTeachersEntity.HourlyRate = SetHourlyRate(addTeachersEntity.HourlyRate, paymentCUrrencyValid.Result.conversion_rates?.COP ?? 1);
+            addTeachersEntity.Equivalence = paymentCUrrencyValid.Result.conversion_rates.COP;
+
+            //if (addTeachersEntity.PaymentCurrent != COLOMBIAN_PAYMENT)
+            //    addTeachersEntity.HourlyRate = SetHourlyRate(addTeachersEntity.HourlyRate, paymentCUrrencyValid.Result.conversion_rates?.COP ?? 1);
+
+
 
             /*Save*/
             var IdAdded = _teacherRepository.Add(addTeachersEntity);
             return new ResponseServices<int>(System.Net.HttpStatusCode.OK, "Ok", IdAdded, 1);
         }
 
-        private decimal SetHourlyRate(decimal _hourlyRate, decimal _equivalence) => _hourlyRate * _equivalence;
+       // private decimal SetHourlyRate(decimal _hourlyRate, decimal _equivalence) => _hourlyRate * _equivalence;
 
         public ResponseServices<bool> DeleteTeacher(int _id)
         {

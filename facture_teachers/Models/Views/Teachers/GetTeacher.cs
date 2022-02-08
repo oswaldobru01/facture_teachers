@@ -31,7 +31,7 @@ namespace facture_teachers.Models.Views.Teachers
             Identification = _teachers.Identification;
             Type = _teachers.Type;
             PaymentCurrent = _teachers.PaymentCurrent;
-            HourlyRate = _teachers.HourlyRate;
+            HourlyRate = _teachers.HourlyRate ;
             Id = _teachers.Id;
         }
     }

@@ -4,6 +4,7 @@ using facture_teachers.Models.DB;
 using facture_teachers.Models.Response;
 using facture_teachers.Models.Validators;
 using facture_teachers.Models.Views.Lesson;
+using facture_teachers.Models.Views.Nomina;
 using System.Globalization;
 
 namespace facture_teachers.Helpers.Services
@@ -15,11 +16,13 @@ namespace facture_teachers.Helpers.Services
         private LessonsValidator _lessonsValidator;
         private LessonsRepository _lessonsRepository;
         private TeachersRepository _teacherRepository;
-        public LessonsService(facture_profesoresContext _context)
+        private ExchangeRateService _exchangeRateService;
+        public LessonsService(facture_profesoresContext _context, ExchangeRateService exchangeRateService)
         {
             _lessonsValidator = new LessonsValidator();
             _lessonsRepository = new LessonsRepository(_context);
             _teacherRepository = new TeachersRepository(_context);
+            _exchangeRateService = exchangeRateService;
         }
 
         public ResponseServices<int> AddLesson(AddLesson _addLesson) 
@@ -59,6 +62,41 @@ namespace facture_teachers.Helpers.Services
         {
             var response = _lessonsRepository.GetByIdentification();
             return new ResponseServices<List<GetLesson>>(System.Net.HttpStatusCode.OK, "Ok", response.Select(l => new GetLesson(l, _teacherRepository.Get(l.IdTeacher))).ToList(), response.Count()); 
+        }
+
+        public ResponseServices<GetNomina> GetNomina(int _year,int _month )
+        {
+            if (_month < 1 || _month > 12)
+                return new ResponseServices<GetNomina>(System.Net.HttpStatusCode.BadRequest, $"Por favor digitar mes correcto");
+
+            if (_year < 1)
+                return new ResponseServices<GetNomina>(System.Net.HttpStatusCode.BadRequest, $"Por favor digitar un año correcto.");
+
+            var result = _lessonsRepository.GetNominaInPeriod(_year, _month);
+
+            var toDay = new DateTime();
+
+            if(_month == toDay.Month && _year == toDay.Year)
+            {
+                foreach (var item in result)
+                {
+                    item.Value = _exchangeRateService?.FindExchangeByCode(item.PaymentCurrent)?.Result?.conversion_rates?.COP??1 * item.Value;
+                };
+
+                //.ForEach(
+                //    l => 
+                //    { 
+                //            l.Value = _exchangeRateService.FindExchangeByCode(l.PaymentCurrent).Result.conversion_rates.COP * l.Value; 
+                //    }); 
+            }
+
+            var response = new GetNomina()
+            {
+                Period = new DateTime(_year, _month, 1).ToString("Y", CultureInfo.GetCultureInfo("es-ES")),
+                Total = result.Sum(l => l.Value),
+                Teachers = result
+            };
+            return new ResponseServices<GetNomina>(System.Net.HttpStatusCode.OK, "Ok", response);
         }
 
     }

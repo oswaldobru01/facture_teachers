@@ -55,6 +55,8 @@ namespace facture_teachers.Models.DB
             {
                 entity.Property(e => e.HourlyRate).HasColumnType("numeric(18, 2)");
 
+                entity.Property(e => e.Equivalence).HasColumnType("numeric(18, 2)");
+
                 entity.Property(e => e.Identification)
                     .HasMaxLength(20)
                     .IsUnicode(false);

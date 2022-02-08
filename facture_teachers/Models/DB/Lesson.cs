@@ -11,6 +11,7 @@ namespace facture_teachers.Models.DB
         public string Course { get; set; } = null!;
         public int DictatedHours { get; set; }
         public decimal Value { get; set; }
+
         public virtual Teacher IdTeacherNavigation { get; set; } = null!;
     }
 }
